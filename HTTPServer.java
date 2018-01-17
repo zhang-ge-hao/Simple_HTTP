@@ -8,7 +8,7 @@ import java.net.*;
  */
 public class HTTPServer {
 	static public int serverPort = 8888;
-	static public String B_DIR = "C:/Users/Administrator/indix/HTTPServerWorkspace";
+	static public String B_DIR = "C:/Users/swc-209/Desktop/s";
 	static public void main(String[] args){
 		ServerSocket ss = null;
 		try {
@@ -16,7 +16,7 @@ public class HTTPServer {
 			while( true )
 				new BrowserThread(ss.accept()).start();
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 }
@@ -39,19 +39,19 @@ class BrowserThread extends Thread{
 														//Parameter initialization
 			String msg = reader.readLine();				//get line one
 			if(msg == null)throw new IOException();
-			fileName = HTTPServer.B_DIR+"/"+msg.split(" ")[1];
+			fileName = HTTPServer.B_DIR+msg.split(" ")[1];
 			if(!new File(fileName).exists())throw new FileNotFoundException();
 			ret200();									//return 200
 		} catch (FileNotFoundException e){ret404();		//return 404
 		} catch (IOException e) {ret500();				//return 500
-		} catch (ArrayIndexOutOfBoundsException e){ret404();}
-														//return 404
+		} catch (ArrayIndexOutOfBoundsException e){ret404();
+		}												//return 404
 		try {
 			if(istream != null)istream.close();
 			ostream.close();
 			reader.close();
 			writer.close();
-		} catch (IOException e) {System.out.println(e.getMessage());}
+		} catch (IOException e) {e.printStackTrace();}
 		
 	}
 	public void ret200() throws IOException{			//the function can return 200
@@ -65,30 +65,31 @@ class BrowserThread extends Thread{
 		writer.println("Content-Length:"+ istream.available());
 		writer.println();
         writer.flush();
-        byte[] bb=new byte[istream.available()+1024];
-        for(int len=istream.read(bb);len!=-1;len=istream.read(bb)){
-        												//transport the file
-            ostream.write(bb,0,len);
-            len=istream.read(bb);
+        byte[] bb=new byte[1024];
+        int len = 0;
+        while ((len = istream.read(bb)) > 0 ) {
+        	ostream.write(bb,0,len);
         }
         ostream.flush();
 	}
 	public void ret404(){								//the function can return 404
+		String msg = "<script>window.location.href='error/404.html'</script>";
 		writer.println("HTTP/1.1 404 Not Found");
 		writer.flush();
-		writer.println("Content-type:text/plain");
-		writer.println("Content-Length:7");
+		writer.println("Content-type:text/html");
+		writer.println("Content-Length:" + msg.length());
 		writer.println();
-		writer.print("<script>window.location.href='error/404.html'</script>");
+		writer.print(msg);
 														//use JavaScript to jump to the 404 page 
 		writer.flush();
 	}
 	public void ret500(){								//the function can return 500
+		String msg = "<script>window.location.href='error/500.html'</script>";
 		writer.println("HTTP/1.1 500 Internal Server Error");
-		writer.println("Content-type:text/plain");
-		writer.println("Content-Length:7");
+		writer.println("Content-type:text/html");
+		writer.println("Content-Length:" + msg.length());
 		writer.println();
-		writer.print("<script>window.location.href='error/500.html'</script>");
+		writer.print(msg);
 														//use JavaScript to jump to the 500 page
 		writer.flush();
 	}

@@ -9,7 +9,7 @@ import java.net.*;
 public class HTTPBrowser {
 	static public PrintStream debug = System.out;
 	static public int serverPort = 8888;
-	public static String B_DIR = "C:/Users/Administrator/indix/HTTPBrowserWorkspace";
+	public static String B_DIR = "C:/Users/swc-209/Desktop/b";
 	
 	static public String[] requests = {					//A group of requests,just for test.
 			"GET /user.html HTTP/1.1",
