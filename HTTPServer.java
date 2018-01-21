@@ -8,7 +8,7 @@ import java.net.*;
  */
 public class HTTPServer {
 	static public int serverPort = 8888;
-	static public String B_DIR = "C:/Users/swc-209/Desktop/s";
+	static public String B_DIR = "C:/Users/Administrator/indix/HTTPServerWorkspace";
 	static public void main(String[] args){
 		ServerSocket ss = null;
 		try {
@@ -32,20 +32,33 @@ class BrowserThread extends Thread{
 		this.bro = bro;
 	}
 	public void run(){
+		boolean connect = true;
 		try {
 			reader = new BufferedReader(new InputStreamReader(bro.getInputStream()));
 			writer = new PrintWriter(new OutputStreamWriter(bro.getOutputStream()));
 			ostream = new BufferedOutputStream(bro.getOutputStream());
-														//Parameter initialization
-			String msg = reader.readLine();				//get line one
-			if(msg == null)throw new IOException();
-			fileName = HTTPServer.B_DIR+msg.split(" ")[1];
-			if(!new File(fileName).exists())throw new FileNotFoundException();
-			ret200();									//return 200
-		} catch (FileNotFoundException e){ret404();		//return 404
-		} catch (IOException e) {ret500();				//return 500
-		} catch (ArrayIndexOutOfBoundsException e){ret404();
-		}												//return 404
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			ret500(); connect = false;
+		}												//Parameter initialization
+		while(connect){
+			try {
+				String msg = reader.readLine();			//get line one
+				if(msg == null)throw new IOException();
+				fileName = HTTPServer.B_DIR+msg.split(" ")[1];
+				while(!(msg=reader.readLine()).equals("")){
+					if(msg.startsWith("Connection")&&msg.split(":")[1].equals("close")){
+						connect = false;
+					}
+				}
+				if(!new File(fileName).exists())throw new FileNotFoundException();
+				ret200();								//return 200
+			} catch (FileNotFoundException e){ret404();	//return 404
+			} catch (IOException e) {ret500();connect = false;
+														//return 500
+			} catch (ArrayIndexOutOfBoundsException e){ret404();connect = false;
+			}											//return 404
+		}
 		try {
 			if(istream != null)istream.close();
 			ostream.close();
